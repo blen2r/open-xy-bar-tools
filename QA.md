@@ -7,13 +7,10 @@ these: they can't hear the timing at the loop point or see the screen.
 
 Report a failure with the section, the line and what you saw or heard. A photo of the screen helps.
 
-**Firmware.** Bar tools needs the SDK's `bar_menu_m3` and `shift_play` claims, `loop_bars` and
-`play_from` actions and `key_label` hook (branch `sdk/bar-loop` of the SDK until they are merged).
-Build it with `sdk.py build ... --extension extensions/bar_tools`. The last full pass was on: (not yet;
-build 120c, OS 1.2.1, passed the first looping checks; 120e adds Shift + Play; 120f keeps loops
-while picking bars, adds Shift + BAR + M3 and the grey bar; 120g makes Shift + BAR + M3 work; 120h labels M3 "loop playing" / "loop shown" (now "loop selected", and since 120n the default without Shift, "loop playing" with Shift); 120i lines tracks up again after a scale or
-length change; 120j: Shift + Play restarts while playing; 120k: and counts in when recording is
-armed; 120n: a song holds its scene while looping, M3 labels swapped).
+**Firmware.** Bar tools needs the SDK's `bar_menu_m3` and `shift_play` claims, its `loop_bars` and
+`play_from` actions and its `key_label` and `sequencer_change` events (branch `sdk/bar-loop` of the SDK
+until they are merged). Build it with `sdk.py build ... --extension extensions/bar_tools`. Last full
+pass: OS 1.2.1, SDK `sdk/bar-loop` at a4c6d1f, 2026-11-04.
 
 AI agents working on the extension keep this file up to date as they go: each change that adds, removes
 or alters something a person would check on the device updates its lines here.
@@ -151,8 +148,7 @@ Start each line stopped, with no loop armed.
       keys already show bar 4
 - [ ] Hold Record, then Shift, then press Play, with track 1's bar 3 shown (stopped, no loop): recording
       arms as with Record + Play and the step keys show bar 3 (stock's red waiting box still reads "1": a
-      known limit). Play a note: playback and recording start at bar 3, the note on its step 1 (your 120x
-      finding, fixed on 120y); tracks 2 and 4 line up (bar 1 (G), bar 3)
+      known limit). Play a note: playback and recording start at bar 3, the note on its step 1; tracks 2 and 4 line up (bar 1 (G), bar 3)
 - [ ] The same, but press Play instead of a note: the count-in, then bar 3, as Shift + Play with
       recording armed
 - [ ] Record + Shift + Play, then disarm (as stock disarms), then plain Play: starts from the top
@@ -160,12 +156,11 @@ Start each line stopped, with no loop armed.
 - [ ] Shift + Play with recording armed, then Stop during the count-in, then plain Play (armed again):
       counts in and starts from the top, not from bar 3
 - [ ] During a count-in (started with Play or Shift + Play), Shift + Play does nothing. (Plain Play
-      there turns recording off and plays on, as stock; checked on 120l)
+      there turns recording off and plays on, as stock)
 - [ ] Recording armed, a loop armed on bar 3, Shift + Play: counts in, then loops bar 3
 - [ ] The metronome clicks on the beat from the start, with the accent on the bar's first beat
 - [ ] A tempo-synced LFO (e.g. 1 bar, a ramp) on a track: its phase follows the bar, from Play, Shift +
       Play, and with looping on or off: at the top of each bar's ramp, at the bottom by the bar's end
-      (seen on 120l)
 - [ ] Envelopes and note lengths. Set up track 5 (4 bars) with a synth sound that has a slow attack
       (about half a second) and a long release (about a second), and give it:
       - bar 2, step 13: a note 8 steps long (it runs into bar 3)
@@ -190,6 +185,8 @@ Start each line stopped, with no loop armed.
       in tempo, and stops with it. Its own sequence starts from its beginning (expected: stock sends no
       song position). Shift + Play while playing (a restart): note what the other device does, compared
       with Play's restart from the top
+- [ ] Following a running external clock (see Setup): loop track 1's bar 3 for a few passes, move it,
+      end it: it all behaves as on the OP-XY's own clock, in time with the other device
 - [ ] Clock out while looping (track 1's bar 3): the other device stays in tempo across the loop point,
       over several passes
 - [ ] External clock (see Setup). Set the OP-XY to follow incoming MIDI clock and start/stop. Start the
@@ -197,7 +194,7 @@ Start each line stopped, with no loop armed.
       stopped, show bar 3 and press Shift + Play on the OP-XY: it plays from bar 3 as without the
       other device. Then with the other device running (it started the OP-XY from bar 1): Shift + Play
       from bar 3 restarts there at once, the tempo stays in sync, but the restart lands wherever you
-      pressed, so the two sequences are no longer aligned (seen on 120l). Set the OP-XY back to its
+      pressed, so the two sequences are no longer aligned. Set the OP-XY back to its
       own clock
 - [ ] Loop armed on track 1's bar 3 (stopped, BAR + M3), then Shift + Play: plays bar 3 and keeps
       repeating it, as Play would with the loop armed
@@ -211,12 +208,11 @@ Start each line stopped, with no loop armed.
 - [ ] Song 3 (empty) selected. Record live into the loop (hold Record, play a note): the loop holds, the
       note lands in bar 3 and plays on the next pass
 - [ ] The same with song 1 selected (scene 1 then scene 2): the loop holds over several passes, the song
-      stays in scene 1 (no high Cs), the note lands in bar 3 (your 120l finding: before 120n the song
-      moved on and ended the loop)
+      stays in scene 1 (no high Cs), the note lands in bar 3
 - [ ] Record live into the loop and hold a note across the loop point (press it on bar 3's step 13 or so,
       keep holding past step 16, release in the next pass): the note wraps, running on into the start
       of the same bar up to where you released it, with no second note and nothing hanging or freezing
-      (seen on 120n). Stock stores only the note's start and length, so once the loop ends the same note
+     . Stock stores only the note's start and length, so once the loop ends the same note
       runs on into bar 4 instead (a known limit). Stock
       can't make a note longer than the bar by editing, so this is the only way to reach the loop point
       with a held note. Do it with song 3, then once with song 1
@@ -255,7 +251,7 @@ Put components on track 1's bar 3 while looping it. Each should stay inside the 
       played) shortens that track's pass, so over several passes it drifts out of step with the other
       tracks. That's expected, as it is without a loop. After the loop ends the tracks stay out of step
       until the scene starts over (with song 1, when the song changes scene), which brings them back in
-      step (seen on 120n)
+      step
 - [ ] Remove the components
 
 ## What ends the loop
@@ -307,7 +303,7 @@ Song 1 is scene 1 then scene 2; song 3 is empty (see Setup). Recording into a lo
       as the loop is on, several passes past where scene 2 would have come (no high Cs)
 - [ ] Song 1 selected, playing, no loop: BAR + M3 on bar 2, then show bar 4 and Shift + BAR + M3 (move
       the loop to the scene's last bar): the loop holds on bar 4 over several passes, the song stays in
-      scene 1 (your 120v finding: it moved on and the loop ended). The move keeps the place within the
+      scene 1. The move keeps the place within the
       bar, by design. Also loop bar 4 directly, and loop the only bar of a 1-bar scene
 - [ ] Song 1 selected, looping bar 3: show bar 1, Shift + BAR + M3 (move the loop to bar 1), then end it:
       bars 2, 3, 4 play, then scene 2, right after bar 4 (the song follows the tracks, not the time spent
@@ -315,17 +311,17 @@ Song 1 is scene 1 then scene 2; song 3 is empty (see Setup). Recording into a lo
 - [ ] A song entry other than the first. Select song 4 (scene 1, 2, 2, 1, 2). On the song screen, Shift +
       Oct+ moves to an entry: go to the second "scene 1" (the 4th entry; it blinks). Go back to track 1
       and show bar 3, then Shift + Play: playback starts at bar 3 of that 4th entry (the song screen shows
-      it playing there, not at the first entry), then plays the last entry (scene 2) (seen on 120zb)
+      it playing there, not at the first entry), then plays the last entry (scene 2)
 - [ ] Same setup, but loop bar 3 (BAR + M3) and press Play: the loop plays in that 4th entry; end the
-      loop: the song carries on from there, to the 5th entry (scene 2) (seen on 120zb)
+      loop: the song carries on from there, to the 5th entry (scene 2)
 - [ ] Song 3 (empty) selected, looping in scene 1: switching to song 1 ends the loop too (another song).
       Scene 1 then finishes, and song 1 starts from its first entry, which is scene 1 again, so scene 1
-      plays once more before scene 2 (seen on 120q; expected to be stock's own song start, not the loop)
+      plays once more before scene 2 (stock's own song start: it does the same without a loop)
 - [ ] Song 1 selected, looping track 1's bar 3 in scene 1 for a while (longer than the 4-bar scene):
       switching to song 2 (scene 2) ends the loop at once (M3 back to "loop selected", the grey box
       gone). Scene 1 plays on from the looped bar to the end of the scene, bar 4 (F) only, then song
       2's high Cs, in time: stock finishes the current scene before switching songs, and the time
-      spent looping doesn't count towards it (on 120o it played bar 4, then bar 1, then song 2). Play
+      spent looping doesn't count towards it. Play
       instead starts the new song at once, as in stock
 
 ## Saving and loading
@@ -339,8 +335,6 @@ Song 1 is scene 1 then scene 2; song 3 is empty (see Setup). Recording into a lo
 
 Not failures, but worth confirming they haven't changed.
 
-- Each pass resets parameter locks as a pattern loop does: a lock doesn't carry from the end of the
-  bar into its next pass.
 - A note held across the loop point while recording wraps into the start of the looped bar, but stock
   stores it as one note with a length: after the loop ends it runs on into the next bar instead.
 - A go-to on one track shortens its pass, so it drifts out of step with the others, as without a loop;
@@ -349,12 +343,10 @@ Not failures, but worth confirming they haven't changed.
   what a looped track plays ends it).
 - Switching songs ends the loop, and, as in stock, the current scene plays to its end before the new
   song starts (Play starts it at once).
-- The popups ("bar loop on/armed/off") repeat what M3's label already shows.
 - Shift + Play starts from the selected track's selected bar (pick it first), counts in when recording
   is armed (as Play), restarts at once while playing, and does nothing during a count-in. It sends no
   MIDI song position, so other gear's own sequences start from their beginning, and under a running
   external clock a restart falls out of step with them (a later idea: wait for the next bar line).
-- External MIDI clock sync has not been tried with loops.
 - Waiting to record from a bar (Record + Play with a loop armed, or Record + Shift + Play), stock's red
   waiting box reads "1" until the first note. The note and playback are on the right bar, and the box is
   right once playback starts.

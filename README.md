@@ -41,8 +41,8 @@ A popup says "bar loop on" (playing) or "bar loop armed" (stopped).
 
 ### Loop the bars that are playing: Shift + BAR + M3
 
-Playing with nothing looping, hold Shift too and M3 reads "loop playing": every track keeps repeating
-the bar it's in, whatever bar the step keys show.
+While playing, with nothing looping, hold BAR and Shift (in either order) and press M3, which then reads
+"loop playing": every track keeps repeating the bar it's playing now, whichever bar you're editing.
 
 ### Move or end a loop
 
@@ -62,12 +62,11 @@ looped bar are heard from the next time the playhead reaches them. Record into t
 
 ### What the bar menu shows
 
-| M3 label | When | What M3 does |
-| --- | --- | --- |
-| loop selected | nothing looping | loops the selected bar |
-| loop playing | nothing looping, playing, Shift held | loops the bars playing |
-| end loop | looping or armed | ends the loop |
-| loop selected | looping or armed, Shift held | moves the loop to the selected bar |
+M3's label always says what pressing it will do, and holding Shift shows the other option:
+
+- **loop selected**: loop the bar you selected (the one the step keys show).
+- **loop playing**: loop the bar each track is playing now.
+- **end loop**: stop looping.
 
 In the bar boxes, the **looped bar is grey**, and while playing the **playing bar's number has a dot**
 ("3."). So while you edit bar 1 of a loop on bar 3, the menu shows bar 1 highlighted, bar 3 grey,
@@ -83,7 +82,7 @@ be had the song played from the top (see [How tracks line up](#how-tracks-line-u
 - **Playing:** restarts from that bar at once, as Play restarts from the top.
 - **Recording armed** (Record + Play): counts in exactly as Play does, then playback and recording
   start at that bar. A note played just before the count-in ends lands on the bar's first step, as it
-  would on bar 1.
+  would on bar 1 (stock behavior).
 - **Record, then Shift + Play** (press Record first: Shift + Record is stock's undo): arms recording
   as Record + Play does, with the step keys already on that bar. Then, as in stock, press Play to
   count in, or just play: your first note starts playback and recording at that bar.
@@ -96,29 +95,66 @@ The metronome, tempo-synced LFOs and envelopes start as on any play; a 1-bar LFO
 
 ### How tracks line up
 
-Tracks can have different lengths (1 to 4 bars) and step scales. Stock keeps them in step with one
-scene clock, and Bar tools uses the same rule: a bar of the selected track starts at some point of song
-time, and every other track takes the bar it would be playing at that point had playback started from
-the top. With track 1 on 4 bars, track 2 on 2 and track 4 on 3, bar 3 of track 1 lines up with bar 1
-of track 2 and bar 3 of track 4; bar 4 of track 1 lines up with bar 2 and bar 1. A track on scale 2
-(half speed) has bars twice as long, so bar 2 of that track begins two bars into the song.
+Tracks can have different lengths (1 to 4 bars) and step scales. Stock keeps them in step by playing
+them all from the top together, and Bar tools uses the same rule: when you pick a bar on the selected
+track, every other track takes the bar it would be playing at that moment had the song played from
+the top.
 
-Looping the playing bars (Shift) doesn't use this: each track keeps the bar it's in.
+Say track 1 has 4 bars, track 2 has 2 and track 3 has 3. Played from the top, they go:
+
+```
+song time  │ bar 1 │ bar 2 │ bar 3 │ bar 4 │
+───────────┼───────┼───────┼───────┼───────┤
+track 1    │   1   │   2   │ [ 3 ] │   4   │   4 bars
+track 2    │   1   │   2   │ [ 1 ] │   2   │   2 bars: starts over after its bar 2
+track 3    │   1   │   2   │ [ 3 ] │   1   │   3 bars: starts over after its bar 3
+```
+
+Loop bar 3 of track 1, and each track loops the bar in its column: track 2 its bar 1, track 3 its
+bar 3. Loop bar 4 instead, and they'd loop bar 2 and bar 1.
+
+A track on a slower step scale has longer bars. On scale 2 (half speed) each of its bars lasts two
+bars of song time:
+
+```
+song time         │ bar 1 │ bar 2 │ bar 3 │ bar 4 │
+──────────────────┼───────┼───────┼───────┼───────┤
+track 1           │   1   │   2   │ [ 3 ] │   4   │
+track 4 (scale 2) │       1       │ [     2     ] │   2 bars, each twice as long
+```
+
+Looping bar 3 of track 1, track 4 loops its bar 2: track 1 repeats bar 3 twice for each pass of
+track 4's bar 2.
+
+Looping the playing bars (Shift + BAR + M3) doesn't use this: each track keeps the bar it's playing.
 
 ### Changing lengths and step scales while looping
 
 Add or remove bars, or change a track's step scale, while a loop is on or armed, and the tracks line
 up again with the bar the selected track loops, as if you had made the change first. The selected
-track is the one selected when the loop started; it keeps its bar. If you remove a bar another track
-was looping, that track moves to the bar that lines up instead. If you remove the selected track's
-looped bar, the loop ends.
+track is the one selected when the loop started; it keeps its bar.
+
+For example, looping bar 3 of track 1, remove a bar from track 3 (3 bars down to 2):
+
+```
+song time         │ bar 1 │ bar 2 │ bar 3 │ bar 4 │
+──────────────────┼───────┼───────┼───────┼───────┤
+track 1           │   1   │   2   │ [ 3 ] │   4   │
+track 3, 3 bars   │   1   │   2   │ [ 3 ] │   1   │   before: loops its bar 3
+track 3, 2 bars   │   1   │   2   │ [ 1 ] │   2   │   after: moves to its bar 1
+```
+
+Track 3 moves to its bar 1, in time, and keeps looping. Track 1 keeps its bar 3. Removing the selected
+track's own looped bar ends the loop.
 
 ### Scenes and songs
 
 A song (one with scenes) stays in its current scene while bars loop, however long you loop. When the
 loop ends, the song moves on when the tracks reach the end of the scene, counted from where the tracks
-are rather than from the time spent looping. So if you loop bar 3 of a 4-bar scene, move the loop to
-bar 1 and end it there, you hear bars 2, 3 and 4, then the next scene.
+are rather than from the time spent looping. In a 4-bar scene:
+
+- Loop bar 3 and end the loop there: you hear bar 4, then the next scene.
+- Loop bar 3, move the loop to bar 1 and end it there: you hear bars 2, 3 and 4, then the next scene.
 
 An empty song just repeats the current scene, as in stock.
 
@@ -147,22 +183,23 @@ of that bar. Components on other bars don't fire while they aren't playing. A go
 shortens that track's pass, so it drifts out of step with the others, as it does without a loop; the
 scene starting over brings them back.
 
-Each pass restarts parameter locks as a pattern loop does: a lock doesn't carry from the end of the
-bar into its next pass. Locks on other bars wait until those bars play again.
+Parameter locks work as usual in the looped bar: each pass plays them just as the pattern does when it
+loops, so every lock is heard on its step, every pass. Locks on other bars wait until those bars play
+again.
 
 ### MIDI
 
 MIDI clock out keeps running through loops and Shift + Play starts. Bar tools sends no song position,
-so another device's own sequence starts from its beginning. Following an external clock, Shift + Play
+so another device's own sequence starts from its beginning. Following an external clock, loops work
+as on the OP-XY's own clock, in time with the other device. Shift + Play
 starts from the selected bar when the other device is stopped; while it runs, a restart stays in tempo
 but lands wherever you press it, so the two sequences fall out of step.
 
 ## Limits
 
-- Parameter locks reset on each pass, and a held note's length runs on after the loop ends (above).
+- A note held across the loop point while recording runs on into the next bar once the loop ends
+  (above).
 - Shift + Play restarts at once wherever you press it; it doesn't wait for a bar line.
-- External MIDI clock sync hasn't been tried with loops.
-- The popups repeat what M3's label already shows.
 
 ## Requirements
 
