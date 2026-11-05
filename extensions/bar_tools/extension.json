@@ -1,0 +1,15 @@
+{
+  "id": "bar_tools",
+  "name": "Bar tools",
+  "description": "Hold BAR + M3 to repeat the current bar; again to stop. Stopped, it starts from the bar shown. Shift + Play plays from that bar.",
+  "note": "Shift + BAR + M3 loops the bar shown. Changing pattern, scene or song stops a loop.",
+  "claims": [
+    "bar_menu_m3",
+    "shift_play"
+  ],
+  "actions": [
+    "loop_bars",
+    "notify",
+    "play_from"
+  ]
+}
