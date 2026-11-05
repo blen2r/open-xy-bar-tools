@@ -200,6 +200,9 @@ but lands wherever you press it, so the two sequences fall out of step.
 - A note held across the loop point while recording runs on into the next bar once the loop ends
   (above).
 - Shift + Play restarts at once wherever you press it; it doesn't wait for a bar line.
+- Waiting to record from a bar (Record + Play with a loop armed, or Record + Shift + Play), stock's red
+  waiting box reads "1" until your first note. The note and playback land on the right bar, and the box
+  is right once playback starts.
 
 ## Requirements
 
