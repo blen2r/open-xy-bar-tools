@@ -6,7 +6,7 @@
 // selected bar. Picking bars to view or
 // edit them keeps the loop; changing a track's length or scale lines the
 // tracks up again; the SDK stops it when the pattern, the scene or the
-// project changes. Shift + Play plays from the shown bar.
+// project changes. Shift + Play plays from the shown bar, moving a loop there.
 namespace opxy { namespace extensions { namespace bar_tools {
 namespace {
 // The selected track when the loop was made, and the bar it loops: when a
@@ -20,10 +20,16 @@ void hold(const Context& context, const BarLoop& loop) {
 }
 void queued_control(const Context& context, const Control& control, const Actions& actions) {
     // Stock ignores Shift + Play; start (playing: restart) from the selected
-    // track's shown bar.
+    // track's shown bar. A loop (on or armed) moves there with it, every track
+    // to the bar that lines up, as Shift + BAR + M3 does; Play alone still
+    // restarts the loop where it is. play_from only asks the transport to
+    // start, so the context stays current for the move, and a refused start
+    // (a count-in under way) leaves the loop alone.
     if (control.key == keys::play) {
-        if (control.pressed && control.shift && control.accepted)
-            actions.play_from(context, shown_start(context));
+        if (!control.pressed || !control.shift || !control.accepted) return;
+        if (!actions.play_from(context, shown_start(context)) || !looping(context.sequencer)) return;
+        const BarLoop loop = choose(context, true);
+        if (!already_loops(loop, context.sequencer) && actions.loop_bars(context, loop)) hold(context, loop);
         return;
     }
     if (control.key != keys::m3 || !control.pressed || control.screen != screens::bar_menu || !control.accepted) return;

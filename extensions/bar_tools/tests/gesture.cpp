@@ -20,7 +20,8 @@ void notify(const char* text) {
 }
 bool loop(const Context&, const BarLoop& l) { ++loops; last = l; return true; }
 u32 starts, started_at;
-bool play(const Context&, u32 at) { ++starts; started_at = at; return true; }
+bool refuse;  // play_from refused (a count-in under way)
+bool play(const Context&, u32 at) { ++starts; started_at = at; return !refuse; }
 const Actions actions = {insert, notify, replace, loop, play};
 
 bool same(const char* a, const char* b) {
@@ -170,5 +171,41 @@ int main() {
     CHECK(loops == before + 3 && last.bar[4] == no_bar && last.bar[1] == no_bar);
     bar_tools::hooks.sequencer_change(slower, actions);
     CHECK(loops == before + 3);
+
+    // Shift + Play while looping moves the loop to the shown bar and starts
+    // there. Track 1 (4 bars) loops bar 3 and shows bar 1; a 3-bar track lines up on its bar 1.
+    Context playing_loop = context(true);
+    track(playing_loop, 1, 4, 2, 0); track(playing_loop, 3, 3, 2);
+    BarLoop held = bar_tools::none(); held.bar[1] = 2; held.bar[3] = 2;
+    Context loop_on = looped(playing_loop, held);
+    u32 n = loops, s0 = starts;
+    key(loop_on, keys::play, true, keys::none, true, true);
+    CHECK(starts == s0 + 1 && started_at == 0 && loops == n + 1 && last.bar[1] == 0 && last.bar[3] == 0);
+    CHECK(last.bar[5] == no_bar);
+    // The moved loop is the new anchor: a scale change lines up with track 1's bar 1.
+    Context after = looped(loop_on, last);
+    after.sequencer.track[3].bar_ticks = 2 * 7680;
+    bar_tools::hooks.sequencer_change(after, actions);
+    CHECK(loops == n + 2 && last.bar[1] == 0 && last.bar[3] == 0);
+    // Shown bar 4: the 3-bar track's bar 1 again (bar 4 = 3 mod 3).
+    Context to_four = loop_on; to_four.sequencer.track[1].shown = 3;
+    key(to_four, keys::play, true, keys::none, true, true);
+    CHECK(starts == s0 + 2 && started_at == 3 * 7680 && loops == n + 3 && last.bar[1] == 3 && last.bar[3] == 0);
+    // Showing the looped bar: a plain restart there, the loop untouched.
+    Context on_loop = loop_on; on_loop.sequencer.track[1].shown = 2;
+    key(on_loop, keys::play, true, keys::none, true, true);
+    CHECK(starts == s0 + 3 && started_at == 2 * 7680 && loops == n + 3);
+    // Plain Play while looping: stock's (restarts the loop where it is).
+    key(loop_on, keys::play, true);
+    CHECK(starts == s0 + 3 && loops == n + 3);
+    // Start refused (a count-in under way): the loop stays.
+    refuse = true;
+    key(loop_on, keys::play, true, keys::none, true, true);
+    refuse = false;
+    CHECK(starts == s0 + 4 && loops == n + 3);
+    // Stopped with a loop armed: the armed loop moves too.
+    Context armed_loop = loop_on; armed_loop.playing = false;
+    key(armed_loop, keys::play, true, keys::none, true, true);
+    CHECK(starts == s0 + 5 && started_at == 0 && loops == n + 4 && last.bar[1] == 0 && last.bar[3] == 0);
     return 0;
 }

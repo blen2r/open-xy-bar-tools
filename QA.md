@@ -136,8 +136,13 @@ Start each line stopped, with no loop armed.
 - [ ] Playing anywhere, show track 1's bar 3, press Shift + Play: playback restarts at once from bar 3
       (E), every track where it lines up (track 2 its bar 1, track 4 its bar 3), as cleanly as Play's
       own restart: no stuck notes, nothing doubled
-- [ ] Playing with a loop on (track 1's bar 3): show bar 1, Shift + Play: restarts in the loop (bar 3,
-      from its first step), the loop holds
+- [ ] Playing with a loop on (track 1's bar 3): show bar 1, Shift + Play: the loop moves to bar 1 and
+      plays it from its first step; every track loops the bar lining up with bar 1 (track 4 its bar
+      1). Hold BAR: bar 1 is grey
+- [ ] Then plain Play: restarts the loop where it is (bar 1), it doesn't move
+- [ ] Looping bar 1, with bar 1 shown: Shift + Play restarts bar 1, as Play does
+- [ ] Looping bar 1, show bar 3, then change track 4's scale: tracks line up with bar 3 (the moved
+      loop), not bar 1
 - [ ] Count-in on (metronome settings), recording not armed: Shift + Play starts at once from the bar,
       as Play starts at once from the top
 - [ ] Recording armed (Record + Play), count-in on: Play counts in, then starts from the top. Arm again,
@@ -157,7 +162,10 @@ Start each line stopped, with no loop armed.
       counts in and starts from the top, not from bar 3
 - [ ] During a count-in (started with Play or Shift + Play), Shift + Play does nothing. (Plain Play
       there turns recording off and plays on, as stock)
-- [ ] Recording armed, a loop armed on bar 3, Shift + Play: counts in, then loops bar 3
+- [ ] Recording armed, a loop armed on bar 3, bar 3 shown, Shift + Play: counts in, then loops bar 3
+- [ ] Recording armed, a loop armed on bar 3, show bar 2, Shift + Play: counts in, then loops bar 2
+- [ ] A loop armed on bar 3, show bar 2, Record + Shift + Play, then a note: playback and recording
+      start in bar 2, which loops; the note lands in bar 2
 - [ ] The metronome clicks on the beat from the start, with the accent on the bar's first beat
 - [ ] A tempo-synced LFO (e.g. 1 bar, a ramp) on a track: its phase follows the bar, from Play, Shift +
       Play, and with looping on or off: at the top of each bar's ramp, at the bottom by the bar's end
@@ -196,8 +204,10 @@ Start each line stopped, with no loop armed.
       from bar 3 restarts there at once, the tempo stays in sync, but the restart lands wherever you
       pressed, so the two sequences are no longer aligned. Set the OP-XY back to its
       own clock
-- [ ] Loop armed on track 1's bar 3 (stopped, BAR + M3), then Shift + Play: plays bar 3 and keeps
-      repeating it, as Play would with the loop armed
+- [ ] Loop armed on track 1's bar 3 (stopped, BAR + M3), bar 3 shown, then Shift + Play: plays bar 3
+      and keeps repeating it, as Play would with the loop armed
+- [ ] Loop armed on track 1's bar 3, show bar 4, Shift + Play: the loop moves, plays bar 4 and keeps
+      repeating it
 - [ ] Shift + Play, stop, Play: the second start is from the top
 
 ## Editing in the looped bar

@@ -50,6 +50,9 @@ While playing, with nothing looping, hold BAR and Shift (in either order) and pr
   Popup: "bar loop off".
 - **Move it:** while looping, Shift + BAR + M3 ("loop selected") moves the loop to the selected bar:
   every track moves to the bar that lines up with it, at once and in time.
+- **Move it and start over:** Shift + Play moves the loop to the selected bar the same way, and plays
+  it from its first step (see [Shift + Play](#play-from-the-selected-bar-shift--play)). Play alone
+  restarts the loop where it is.
 
 Shift works whichever you press first. Pressing Shift before BAR keeps the bar menu open after you let
 go of BAR (stock), and M3 works the same there.
@@ -87,7 +90,9 @@ be had the song played from the top (see [How tracks line up](#how-tracks-line-u
   as Record + Play does, with the step keys already on that bar. Then, as in stock, press Play to
   count in, or just play: your first note starts playback and recording at that bar.
 - **During a count-in:** does nothing (Play there turns recording off and plays on, as in stock).
-- **With a loop armed:** the loop holds, as with Play.
+- **With a loop on or armed:** the loop moves to the selected bar (every track to the bar that lines
+  up with it) and plays from there. Plain Play still restarts the loop where it is. If the selected bar
+  is the looped bar, Shift + Play just restarts it, as Play does.
 
 The metronome, tempo-synced LFOs and envelopes start as on any play; a 1-bar LFO lines up with the bar.
 

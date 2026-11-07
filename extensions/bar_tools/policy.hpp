@@ -16,6 +16,13 @@ inline bool looping(const Sequencer& s) {
     return false;
 }
 
+// Whether every track already loops the bar `loop` gives it.
+inline bool already_loops(const BarLoop& loop, const Sequencer& s) {
+    for (u32 t = 0; t < sequencer_tracks; ++t)
+        if (loop.bar[t] != s.track[t].loop) return false;
+    return true;
+}
+
 // The bar a track plays `at` song ticks after the patterns started together:
 // its bar N lines up with bar N mod its length of the others (in song time,
 // so tracks on other scales line up too).
