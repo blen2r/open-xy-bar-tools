@@ -1,10 +1,10 @@
 {
   "id": "bar_tools",
   "name": "Bar tools",
-  "description": "Hold BAR + M3 to loop the selected bar, again to stop; with Shift, the bars playing. Shift + Play plays or records from that bar.",
+  "description": "Hold BAR: M1 loops the selected bar, M2 the bars playing or ends the loop; Shift + M keeps stock's clears. Shift + Play plays from a bar.",
   "note": "Changing pattern, song or project ends a loop.",
   "claims": [
-    "bar_menu_m3",
+    "bar_menu",
     "shift_play"
   ],
   "actions": [

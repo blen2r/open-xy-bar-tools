@@ -3,7 +3,7 @@
 An Open-XY firmware extension for the OP-XY (OS 1.2.1) for working one bar at a time, with everything
 else about playback as stock:
 
-- **Loop a bar:** hold BAR, press M3, and the bar you're on repeats until you press M3 again, while you
+- **Loop a bar:** hold BAR, press M1, and the bar you're on repeats until you end it with M2, while you
   keep editing any bar.
 - **Play from a bar:** Shift + Play starts (or restarts) playback from the bar you're on instead of
   from the top, with the count-in when recording.
@@ -22,14 +22,32 @@ A pattern on the OP-XY has up to 4 bars of 16 steps. Two of them matter here, an
   something else plays; its step keys then show no running light.
 
 Hold **BAR** to open stock's bar menu. It shows the track's bars as boxes, the selected one
-highlighted, with M1 "clr notes", M2 "clr params", M4 "clr all", and "+" and "-" to add or remove
-bars. Stock leaves M3 unused there; Bar tools uses it.
+highlighted, with M1 "clr notes", M2 "clr params", M4 "clr all" (each clears once you've held the key
+for a moment), and "+" and "-" to add or remove bars. Bar tools puts its loop options on the M keys
+and moves stock's clears to Shift + M (see [The bar menu's keys](#the-bar-menus-keys)).
 
 ## What Bar tools adds
 
-### Loop the selected bar: BAR + M3
+### The bar menu's keys
 
-Hold BAR and press M3 ("loop selected"). The selected track loops its selected bar, and every other
+Hold BAR to open the bar menu. Its M keys are Bar tools' loop options; hold Shift as well and they're
+stock's clears again, labels included:
+
+```
+                 M1              M2              M3    M4
+BAR + M          loop bar        loop playing    -     -
+                                 end loop  (while a loop is on or armed)
+BAR + Shift + M  clr notes       clr params      -     clr all
+```
+
+The labels say what each key does now. "loop playing" is greyed out while stopped, as there's nothing
+playing to loop. Shift works whichever you press first; pressing Shift before BAR keeps the bar menu
+open after you let go of BAR (stock), and the keys work the same there. The clears work as in stock,
+once you've held the key for a moment.
+
+### Loop the selected bar: BAR + M1
+
+Hold BAR and press M1 ("loop bar"). The selected track loops its selected bar, and every other
 track loops the bar that lines up with it (see [How tracks line up](#how-tracks-line-up)).
 
 - **Playing:** the tracks go there straight away, in time, at the same place within the bar. If the
@@ -39,23 +57,20 @@ track loops the bar that lines up with it (see [How tracks line up](#how-tracks-
 
 A popup says "bar loop on" (playing) or "bar loop armed" (stopped).
 
-### Loop the bars that are playing: Shift + BAR + M3
+### Loop the bars that are playing: BAR + M2
 
-While playing, with nothing looping, hold BAR and Shift (in either order) and press M3, which then reads
-"loop playing": every track keeps repeating the bar it's playing now, whichever bar you're editing.
+While playing, with nothing looping, hold BAR and press M2 ("loop playing"): every track keeps
+repeating the bar it's playing now, whichever bar you're editing.
 
 ### Move or end a loop
 
-- **End it:** BAR + M3 again ("end loop"). Playback carries on from the looped bar into the next one.
-  Popup: "bar loop off".
-- **Move it:** while looping, Shift + BAR + M3 ("loop selected") moves the loop to the selected bar:
-  every track moves to the bar that lines up with it, at once and in time.
+- **End it:** BAR + M2 ("end loop"), while a loop is on or armed. Playback carries on from the looped
+  bar into the next one. Popup: "bar loop off".
+- **Move it:** while looping, select another bar and press BAR + M1 ("loop bar"): every track
+  moves to the bar that lines up with it, at once and in time.
 - **Move it and start over:** Shift + Play moves the loop to the selected bar the same way, and plays
   it from its first step (see [Shift + Play](#play-from-the-selected-bar-shift--play)). Play alone
   restarts the loop where it is.
-
-Shift works whichever you press first. Pressing Shift before BAR keeps the bar menu open after you let
-go of BAR (stock), and M3 works the same there.
 
 ### Keep working while it loops
 
@@ -64,12 +79,6 @@ their notes and parameter locks, then come back; the loop keeps playing througho
 looped bar are heard from the next time the playhead reaches them. Record into the loop as usual.
 
 ### What the bar menu shows
-
-M3's label always says what pressing it will do, and holding Shift shows the other option:
-
-- **loop selected**: loop the bar you selected (the one the step keys show).
-- **loop playing**: loop the bar each track is playing now.
-- **end loop**: stop looping.
 
 In the bar boxes, the **looped bar is grey**, and while playing the **playing bar's number has a dot**
 ("3."). So while you edit bar 1 of a loop on bar 3, the menu shows bar 1 highlighted, bar 3 grey,
@@ -131,7 +140,7 @@ track 4 (scale 2) │       1       │ [     2     ] │   2 bars, each twice a
 Looping bar 3 of track 1, track 4 loops its bar 2: track 1 repeats bar 3 twice for each pass of
 track 4's bar 2.
 
-Looping the playing bars (Shift + BAR + M3) doesn't use this: each track keeps the bar it's playing.
+Looping the playing bars (BAR + M2) doesn't use this: each track keeps the bar it's playing.
 
 ### Changing lengths and step scales while looping
 
@@ -165,7 +174,7 @@ An empty song just repeats the current scene, as in stock.
 
 ### What ends a loop
 
-- BAR + M3 ("end loop").
+- BAR + M2 ("end loop").
 - A looped track playing another pattern: changing its pattern by hand, or a scene change that does
   (a scene change that leaves every looped track on the same pattern keeps the loop).
 - Selecting another song. As in stock, the current scene then plays to its end before the new song
@@ -211,7 +220,7 @@ but lands wherever you press it, so the two sequences fall out of step.
 
 ## Requirements
 
-Bar tools needs the Open-XY SDK's `bar_menu_m3` and `shift_play` claims, its `loop_bars` and
+Bar tools needs the Open-XY SDK's `bar_menu` and `shift_play` claims, its `loop_bars` and
 `play_from` actions, and its `key_label` and `sequencer_change` events.
 
 ## Checks

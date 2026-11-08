@@ -25,6 +25,7 @@ bool play(const Context&, u32 at) { ++starts; started_at = at; return !refuse; }
 const Actions actions = {insert, notify, replace, loop, play};
 
 bool same(const char* a, const char* b) {
+    if (!a || !b) return a == b;
     while (*a && *a == *b) { ++a; ++b; }
     return *a == *b;
 }
@@ -47,28 +48,32 @@ void key(const Context& c, u32 k, bool pressed, u32 held = keys::none, bool acce
                              screen};
     bar_tools::hooks.queued_control(c, control, actions);
 }
-// Hold BAR, press M3 (with Shift, or not), let go of both.
-void toggle(const Context& c, bool shift = false) {
-    key(c, keys::bar, true, keys::none, true, shift); key(c, keys::m3, true, keys::bar, true, shift);
-    key(c, keys::m3, false, keys::bar, true, shift); key(c, keys::bar, false, keys::none, true, shift);
+// Hold BAR, press an M key (with Shift, or not), let go of both.
+void menu_key(const Context& c, u32 m, bool shift = false) {
+    key(c, keys::bar, true, keys::none, true, shift); key(c, m, true, keys::bar, true, shift);
+    key(c, m, false, keys::bar, true, shift); key(c, keys::bar, false, keys::none, true, shift);
 }
 Context looped(Context c, const BarLoop& l) {
     for (u32 t = 0; t < sequencer_tracks; ++t) c.sequencer.track[t].loop = l.bar[t];
     return c;
 }
+bool label(const Context& c, u32 k, const char* text, bool enabled = true) {
+    const KeyLabel l = bar_tools::hooks.key_label(c, k);
+    return same(l.text, text) && l.enabled == enabled;
+}
 }
 
 int main() {
-    // Playing, Shift: each track keeps the bar it is in. Track 1 (selected, 4
+    // Playing, M2: each track keeps the bar it is in. Track 1 (selected, 4
     // bars) is in bar 3; a 2-bar track is in its bar 1; an empty track is left alone.
     Context playing = context(true);
     track(playing, 1, 4, 2); track(playing, 0, 2, 0); track(playing, 4, 3, 2);
-    toggle(playing, true);
+    menu_key(playing, keys::m2);
     CHECK(loops == 1 && last.bar[1] == 2 && last.bar[0] == 0 && last.bar[4] == 2 && last.bar[5] == no_bar);
     CHECK(popups == 1 && same(said, "bar loop on"));
-    // Again: off, with a popup; releasing BAR after M3 is not a bar pick.
+    // M2 again: off, with a popup; releasing BAR after it is not a bar pick.
     const Context on = looped(playing, last);
-    toggle(on);
+    menu_key(on, keys::m2);
     CHECK(loops == 2 && last.bar[1] == no_bar && popups == 2 && same(said, "bar loop off"));
 
     // Picking bars (BAR on its own) to view or edit them keeps the loop.
@@ -76,31 +81,36 @@ int main() {
     key(playing, keys::bar, true); key(playing, keys::bar, false);
     CHECK(loops == 2 && popups == 2);
 
-    // Shift + BAR + M3 loops the bar shown, moving a loop there: track 1 loops
-    // bar 3 but shows bar 1, so every track moves to the bar lining up with it.
+    // M1 while looping moves the loop to the bar shown: track 1 loops bar 3 but
+    // shows bar 1, so every track moves to the bar lining up with it.
     Context moved = on; moved.sequencer.track[1].shown = 0;
-    toggle(moved, true);
+    menu_key(moved, keys::m1);
     CHECK(loops == 3 && last.bar[1] == 0 && last.bar[0] == 0 && last.bar[4] == 0 && last.bar[5] == no_bar);
     CHECK(popups == 3 && same(said, "bar loop on"));
-    // Shift pressed first keeps the menu open without BAR: M3 still works there.
+    // Again on the bar it already loops: nothing changes.
+    menu_key(looped(moved, last), keys::m1);
+    CHECK(loops == 3 && popups == 3);
+    // A menu kept open by pressing Shift first (BAR let go, Shift too): M1 works there.
     Context kept = looped(moved, last); kept.sequencer.track[1].shown = 3;
-    key(kept, keys::m3, true, keys::none, true, true, true);
+    key(kept, keys::m1, true, keys::none, true, false, true);
     CHECK(loops == 4 && last.bar[1] == 3 && popups == 4);
-    key(kept, keys::m3, true, keys::none, true, false, false);  // menu closed: stock's
-    CHECK(loops == 4);
-    // With nothing looping, playing, no Shift: the selected (shown) bar, not the playing one.
+    // With Shift the M keys are stock's (its clears); so are M3, M4, a closed
+    // menu and keys stock did not take.
+    key(kept, keys::m1, true, keys::bar, true, true);
+    key(kept, keys::m2, true, keys::none, true, true, true);
+    key(kept, keys::m3, true, keys::bar);
+    key(kept, keys::m4, true, keys::bar);
+    key(kept, keys::m1, true);
+    key(kept, keys::m1, true, keys::bar, false);
+    key(kept, keys::m2, true, keys::m1);
+    CHECK(loops == 4 && popups == 4);
+    // With nothing looping, playing, M1: the selected (shown) bar, not the playing one.
     Context fresh = playing; fresh.sequencer.track[1].shown = 1;
-    toggle(fresh);
+    menu_key(fresh, keys::m1);
     CHECK(loops == 5 && last.bar[1] == 1 && last.bar[0] == 1 && last.bar[4] == 1);
 
-    // M3 outside the bar menu (alone, or with another key held) or not accepted: stock's.
-    key(playing, keys::m3, true);
-    key(playing, keys::m3, true, keys::bar, false);
-    key(playing, keys::m3, true, keys::m1);
-    CHECK(loops == 5);
-
-    // Stopped: the selected track's shown bar, and the bars that line up with
-    // it. Selected track 1 has 4 bars and shows bar 3 (index 2).
+    // Stopped, M1: the selected track's shown bar, and the bars that line up
+    // with it. Selected track 1 has 4 bars and shows bar 3 (index 2).
     Context stopped = context(false);
     track(stopped, 1, 4, 0, 2);
     track(stopped, 0, 1, 0);   // 1 bar: bar 1
@@ -108,25 +118,29 @@ int main() {
     track(stopped, 3, 3, 0);   // 3 bars: bar 3
     track(stopped, 4, 4, 0);   // 4 bars: bar 3
     track(stopped, 5, 3, 0, 0, 2560);  // a third of the scale: 3 of its bars per bar → (2*7680) % 7680 / 2560 = 0
-    toggle(stopped);
+    menu_key(stopped, keys::m1);
     CHECK(loops == 6 && last.bar[1] == 2 && last.bar[0] == 0 && last.bar[2] == 0 && last.bar[3] == 2 && last.bar[4] == 2);
     CHECK(last.bar[5] == 0 && same(said, "bar loop armed"));
     // Shown bar 4 of the 4-bar track: a 3-bar track lines up on its bar 1.
     stopped.sequencer.track[1].shown = 3;
-    toggle(stopped);
+    menu_key(stopped, keys::m1);
     CHECK(loops == 7 && last.bar[1] == 3 && last.bar[3] == 0 && last.bar[2] == 1);
+    // Stopped with nothing looping, M2 has nothing playing to loop.
+    menu_key(stopped, keys::m2);
+    CHECK(loops == 7);
+    // Stopped with a loop armed, M2 ends it.
+    menu_key(looped(stopped, last), keys::m2);
+    CHECK(loops == 8 && last.bar[1] == no_bar && same(said, "bar loop off"));
 
-    // M3's label in the bar menu follows the loop, armed included; other keys keep stock's.
-    CHECK(same(bar_tools::hooks.key_label(playing, keys::m3), "loop selected"));
-    CHECK(same(bar_tools::hooks.key_label(stopped, keys::m3), "loop selected"));
-    CHECK(same(bar_tools::hooks.key_label(on, keys::m3), "end loop"));
-    // Looping, Shift moves the loop to the selected bar; playing without a loop, Shift loops the bars playing.
-    Context on_shift = on; on_shift.shift = true;
-    Context playing_shift = playing; playing_shift.shift = true;
-    CHECK(same(bar_tools::hooks.key_label(on_shift, keys::m3), "loop selected"));
-    CHECK(same(bar_tools::hooks.key_label(playing_shift, keys::m3), "loop playing"));
-    CHECK(same(bar_tools::hooks.key_label(looped(stopped, last), keys::m3), "end loop"));
-    CHECK(bar_tools::hooks.key_label(on, keys::record) == nullptr);
+    // The bar menu's labels: M1 "loop bar"; M2 "loop playing" (greyed out
+    // while stopped), or "end loop" while bars loop or are armed; M3 and M4
+    // empty; other keys none.
+    CHECK(label(playing, keys::m1, "loop bar") && label(on, keys::m1, "loop bar"));
+    CHECK(label(playing, keys::m2, "loop playing") && label(stopped, keys::m2, "loop playing", false));
+    CHECK(label(on, keys::m2, "end loop") && label(looped(stopped, last), keys::m2, "loop playing", false));
+    BarLoop armed_bar = bar_tools::none(); armed_bar.bar[1] = 2;
+    CHECK(label(looped(stopped, armed_bar), keys::m2, "end loop"));
+    CHECK(label(on, keys::m3, nullptr) && label(on, keys::m4, nullptr) && label(on, keys::record, nullptr));
 
     // Shift + Play, stopped: from the selected track's shown bar (track 1 shows bar 4).
     key(stopped, keys::play, true, keys::none, true, true);
@@ -150,7 +164,7 @@ int main() {
     // up on its bar 3, then at half speed on its bar 2, as if set first.
     Context armed = context(false);
     track(armed, 1, 4, 0, 2); track(armed, 4, 3, 0);
-    toggle(armed);
+    menu_key(armed, keys::m1);
     CHECK(last.bar[1] == 2 && last.bar[4] == 2);
     Context slower = looped(armed, last);
     slower.sequencer.track[4].bar_ticks = 2 * 7680;
