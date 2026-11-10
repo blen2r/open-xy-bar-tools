@@ -1,7 +1,7 @@
 {
   "id": "bar_tools",
   "name": "Bar tools",
-  "description": "Hold BAR: M1 loops the selected bar, M2 the bars playing or ends the loop; Shift + M keeps stock's clears. Shift + Play plays from a bar.",
+  "description": "Shift + Play plays from the selected bar; BAR + Shift + Play loops it; BAR + Play loops the bars playing or ends a loop. Options in COM.",
   "note": "Changing pattern, song or project ends a loop.",
   "claims": [
     "bar_menu",
@@ -11,5 +11,15 @@
     "loop_bars",
     "notify",
     "play_from"
-  ]
+  ],
+  "settings": {
+    "title": "bar tools",
+    "rows": [
+      {"label": "transition", "values": ["instant", "restart", "next bar"], "default": "instant"},
+      {"label": "--", "text": ""},
+      {"label": "shift+play", "text": "play highlighted"},
+      {"label": "bar+shift+play", "text": "play+loop highl."},
+      {"label": "bar+play", "text": "toggle loop"}
+    ]
+  }
 }

@@ -39,6 +39,14 @@ inline u32 shown_start(const Context& context) {
     return anchor.bars && anchor.shown < anchor.bars ? anchor.shown * anchor.bar_ticks : 0;
 }
 
+// Where the selected track's playing bar starts, in song ticks (0 without one).
+inline u32 playing_start(const Context& context) {
+    const u32 selected = context.recording.track;
+    if (selected >= sequencer_tracks) return 0;
+    const SequencerTrack& anchor = context.sequencer.track[selected];
+    return anchor.bars && anchor.bar < anchor.bars ? anchor.bar * anchor.bar_ticks : 0;
+}
+
 // Every track on the bar that lines up with `bar` of `anchor` (the anchor on
 // that bar itself); nothing if the anchor has no such bar.
 inline BarLoop aligned_to(const Context& context, u32 anchor, u32 bar) {
